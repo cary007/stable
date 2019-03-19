@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brokerlogpv
+  namespace: kube-system
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    path: /home/rocketmq/brokerlogs
+    server: 192.168.101.176
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: brokerlogpvc
+  namespace: kube-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs
