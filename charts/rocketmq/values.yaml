@@ -1,0 +1,83 @@
+image:
+  registry:docker.io
+  repository:
+  tag:
+  rbacEnabled:true
+rocketmq:
+  username: user
+  ulimitNofiles: '65536'
+  plugins: |-
+      [rocketmq_management,rocketmq_peer_discovery_k8s].
+  clustering:
+    address_type: ip
+    k8s_domain: cluster.local
+  loadDefinition:
+     enable:false
+     secretName: loadDefinition
+     
+   configuration: |-
+   ## Clustering
+   cluster_formation.peer_discovery_backend = rocket_peer_discovery_k8s
+   cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+   cluster_formation.node_cleanup.interval = 10
+   cluster_formation.node_cleanup.only_log_warning = true
+   cluster_partition_handling = autoheal
+   #queue master locator
+   queue_master_locator=min-masters
+   #enable guest user
+   loopback_users.guest = false
+   
+   extraConfiguration: |-
+     #disk_free_limit,absolute = 50MB
+     # management.load_Definition = /app/load_definition.json
+service:
+   type: ClusterIP
+   #port:5672
+   #distPort:25672
+   #managerPort:15672
+podLabels:{}
+securityContext:
+  enabled: true
+  fsGroup: 1001
+  runAsUser: 1001
+persistence:
+   enabled:
+   false
+   accessMode: ReadWriteOnce
+   size:8Gi
+   resource: {}
+   
+    replicas: 1
+    nodeSelector: {}
+    tolerations: []
+    affinity {}
+    
+    podAnnotations: {}
+ingress
+   enabled: false
+   path: /
+   tls: false
+   tlsSecret: myTlsSecret
+   annotations:
+livenessProbe:
+   enable:true
+   initialDelaySeconds: 120
+   timeoutSeconds:20
+   periodSeconds:30
+   failureThreshold: 6
+   successThreshold: 1
+readinessProbe:
+   enabled:true
+   initialDelaySeconds: 10
+   timeoutSeconds: 20
+   periodSeconds: 30
+   failureThreshold: 3
+   successThreshold: 1
+metrics:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: 
+    tag:
+    pullPolicy: IfNotPresent
+    resources: {}
