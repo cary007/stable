@@ -1,0 +1,55 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: rocketmq1
+  namespace: kube-system  
+spec:
+  replicas: 1
+  template:
+    metadata:
+     labels:
+       app: rocketmq1
+    spec:
+      containers:
+      - name: namesrv
+        image: foxiswho/rocketmq:server
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 9876
+        env:
+        - name: JAVA_OPT_EXT
+          value : "-Xms1g -Xmx1g -Xmn512m"
+        volumeMounts:
+        - name: rocketmq1namesrvlog
+          mountPath: /opt/logs
+      - name: broker
+        image: foxiswho/rocketmq:broker
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: brockerserver
+            containerPort: 10909
+          - name: brockerslave
+            containerPort: 10911
+        env:
+        - name: JAVA_OPT_EXT
+          value : "-Xms2g -Xmx2g -Xmn1g"
+        volumeMounts:
+          - name: brokerlogs
+            mountPath: /opt/logs
+          - name: brokerstore
+            mountPath: /opt/store
+          - name: configfile
+            mountPath: /etc/rocketmq
+      volumes:
+      - name: rocketmq1namesrvlog
+        persistentVolumeClaim:
+          claimName: serverlogpvc
+      - name: brokerlogs
+        persistentVolumeClaim:
+          claimName: brokerlogpvc
+      - name: brokerstore
+        persistentVolumeClaim:
+          claimName: brokerstorepvc                    
+      - name: configfile
+        configMap:
+          name: broker-conf
